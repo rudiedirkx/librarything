@@ -8,6 +8,7 @@ function get_request( $method, $function, $data = array() ) {
 		'key' => APP_KEY,
 		'secret' => APP_SECRET,
 		'token' => $accessToken,
+		'format' => 'json',
 	);
 	$url = LT_BASE_URL . '/services/rest/1.1/';
 	$http = HTTP::create($url, array(
