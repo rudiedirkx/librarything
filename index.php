@@ -31,12 +31,15 @@ if ( !$accessToken ) {
 // var_dump($accessToken);
 // exit;
 
+echo __LINE__ . "\n";
 $request = get_request('read', 'profile', array());
 print_r($request);
 // exit;
 
+echo __LINE__ . "\n";
 $response = $request->request();
 print_r($response);
+
 exit;
 
 echo trim($response->raw) . "\n\n";

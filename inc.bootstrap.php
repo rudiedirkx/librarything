@@ -1,1 +1,13 @@
-<?phprequire 'env.php';require 'inc.functions.php';require '/var/www/inc/HTTP/HTTP.php';header('Content-type: text/html; charset=utf-8');define('LT_BASE_URL', 'http://www.librarything.com');define('SESSION_NAME', 'lt');define('DT', 'd M H:i');
+<?php
+
+require 'env.php';
+require 'inc.functions.php';
+
+require '/var/www/inc/HTTP/HTTP.php';
+
+header('Content-type: text/html; charset=utf-8');
+
+define('LT_BASE_URL', 'https://www.librarything.com');
+
+define('SESSION_NAME', 'lt');
+define('DT', 'd M H:i');
