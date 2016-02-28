@@ -3,7 +3,7 @@
 require 'env.php';
 require 'inc.functions.php';
 
-require '/var/www/inc/HTTP/HTTP.php';
+require '/var/www/inc/HTTP/autoload.php';
 
 header('Content-type: text/html; charset=utf-8');
 
