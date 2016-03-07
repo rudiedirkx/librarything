@@ -1,6 +1,5 @@
 {
     "require": {
-        "guzzlehttp/guzzle": "^6.1",
-        "rdx/http": "dev-master"
+        "guzzlehttp/guzzle": "^6.1"
     }
 }
