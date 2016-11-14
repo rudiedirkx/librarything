@@ -3,6 +3,7 @@
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\FileCookieJar;
 use GuzzleHttp\RedirectMiddleware;
+use rdx\jsdom\Node;
 
 require 'inc.bootstrap.php';
 
@@ -36,5 +37,19 @@ if ( strpos($res->getBody(), 'formusername') ) {
 }
 
 // GET /catalog/rudiedirkx
-$res = $client->request('GET', LT_BASE_URL . '/', []);
-echo $res->getBody();
+$res = $client->request('GET', LT_BASE_URL . '/catalog_bottom.php', []);
+$html = $res->getBody();
+// echo $html;
+
+$node = Node::create($html);
+$rows = $node->queryAll('tr.cat_catrow');
+var_dump(count($rows));
+foreach ($rows as $row) {
+	echo "\n\n";
+	$title = $row->query('a.lt-title')->innerText;
+	var_dump($title);
+	$author = $row->query('a.lt-author')->innerText;
+	var_dump($author);
+	$rating = (int) $row->query('input[name="form_rating"]')['value'];
+	var_dump($rating);
+}
