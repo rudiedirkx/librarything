@@ -48,21 +48,27 @@ class BookRow extends Node {
 		});
 	}
 
-	public function getCollections() {
-		return $this->_cache(__FUNCTION__, function() {
+	public function getCollections(array $skipCollections = []) {
+		$collections = $this->_cache(__FUNCTION__, function() {
 			foreach ($this->children() as $child) {
 				if (strpos($child->innerText, 'Edit collections')) {
 					$nodes = $child->queryAll('.mbmi.mbmiSelected');
 					$collections = [];
 					foreach ($nodes as $node) {
-						if ($node->innerText != 'Your library') {
-							$collections[] = $node->innerText;
-						}
+						$collections[] = $node->innerText;
 					}
 					return $collections;
 				}
 			}
 		});
+
+		if ($skipCollections) {
+			$collections = array_filter($collections, function($name) use ($skipCollections) {
+				return !in_array($name, $skipCollections);
+			});
+		}
+
+		return $collections;
 	}
 
 }

@@ -29,6 +29,32 @@ class Client {
 	/**
 	 *
 	 */
+	public function getCollections(array $books, &$skipCollections = []) {
+		// Gather all collections from all books
+		$collections = [];
+		foreach ($books as $book) {
+			foreach ($book->getCollections() as $collection) {
+				@$collections[$collection]++;
+			}
+		}
+
+		// Skip and remember the ones that exist everywhere
+		foreach ($collections as $name => $usage) {
+			if ($usage == count($books)) {
+				$skipCollections[] = $name;
+				unset($collections[$name]);
+			}
+		}
+
+		$collections = array_keys($collections);
+		$collections = array_combine($collections, $collections);
+
+		return $collections;
+	}
+
+	/**
+	 *
+	 */
 	public function getCatalogue() {
 		// Get the first page
 		$res = $this->guzzle->request('GET', '/catalog_bottom.php', []);
