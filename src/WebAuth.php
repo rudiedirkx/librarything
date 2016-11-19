@@ -13,7 +13,7 @@ class WebAuth {
 	/**
 	 * Dependency constructor
 	 */
-	public function __construct( $cookiesFile, $user, $pass ) {
+	public function __construct($cookiesFile, $user, $pass) {
 		$this->cookies = $this->getCookieJar($cookiesFile);
 		$this->user = $user;
 		$this->pass = $pass;
@@ -23,8 +23,8 @@ class WebAuth {
 	 *
 	 */
 	protected function getCookieJar($file) {
-		touch($file);
-		chmod($file, 0600);
+		@touch($file);
+		@chmod($file, 0600);
 		return new FileCookieJar($file, true);
 	}
 

@@ -7,20 +7,26 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\RedirectMiddleware;
 use rdx\jsdom\Node;
+use rdx\librarything\Book;
+use rdx\librarything\FileCache;
 use rdx\librarything\WebAuth;
-use rdx\librarything\catalogue\BookRow;
+use rdx\librarything\BookRow;
 
 class Client {
 
 	public $base = 'https://www.librarything.com';
+
 	public $auth; // rdx\librarything\WebAuth
+	public $cache; // rdx\librarything\FileCache
+
 	public $guzzle; // GuzzleHttp\Client
 
 	/**
 	 * Dependency constructor
 	 */
-	public function __construct( WebAuth $auth ) {
+	public function __construct(WebAuth $auth, FileCache $cache) {
 		$this->auth = $auth;
+		$this->cache = $cache;
 
 		$this->setUpGuzzle();
 	}
@@ -55,39 +61,43 @@ class Client {
 	 *
 	 */
 	public function getCatalogue() {
-		// Get the first page
-		$res = $this->guzzle->request('GET', '/catalog_bottom.php', []);
-		$htmls = [$res->getBody()];
+		return $this->cache->retrieve('catalogue', function() {
+			// Get the first page
+			$res = $this->guzzle->request('GET', '/catalog_bottom.php', []);
+			$htmls = [$res->getBody()];
 
-		$getNextPageUri = function($html) {
-			$dom = Node::create($html);
-			$els = $dom->queryAll('.pageShuttleButton');
-			foreach ($els as $el) {
-				if ($el->innerText == 'next page') {
-					return $el;
+			$getNextPageUri = function($html) {
+				$dom = Node::create($html);
+				$els = $dom->queryAll('.pageShuttleButton');
+				foreach ($els as $el) {
+					if ($el->innerText == 'next page') {
+						return $el;
+					}
+				}
+			};
+
+			// Get all next pages
+			while ($next = $getNextPageUri(end($htmls))) {
+				$res = $this->guzzle->request('GET', $next['href'], []);
+				$htmls[] = $res->getBody();
+			}
+
+			// Collect Node objects, one for every row
+			$books = [];
+			foreach ($htmls as $html) {
+				$dom = Node::create($html);
+				$rows = $dom->queryAll('tr.cat_catrow', BookRow::class);
+				foreach ($rows as $row) {
+					$books[] = new Book($row);
 				}
 			}
-		};
 
-		// Get all next pages
-		while ($next = $getNextPageUri(end($htmls))) {
-			$res = $this->guzzle->request('GET', $next['href'], []);
-			$htmls[] = $res->getBody();
-		}
+			usort($books, function($a, $b) {
+				return strcmp($b->entry_date, $a->entry_date);
+			});
 
-		// Collect Node objects, one for every row
-		$books = [];
-		foreach ($htmls as $html) {
-			$dom = Node::create($html);
-			$rows = $dom->queryAll('tr.cat_catrow', BookRow::class);
-			$books = array_merge($books, $rows);
-		}
-
-		usort($books, function($a, $b) {
-			return $b->getEntryDate()->getTimestamp() - $a->getEntryDate()->getTimestamp();
+			return $books;
 		});
-
-		return $books;
 	}
 
 	/**
@@ -97,7 +107,7 @@ class Client {
 		// GET /home
 		$res = $this->guzzle->request('GET', '/home', []);
 
-		if ( strpos($res->getBody(), 'formusername') ) {
+		if (strpos($res->getBody(), 'formusername')) {
 			// POST /enter/start
 			// GET /enter/checkcookies/2403928250
 			// GET /enter/process/signinform

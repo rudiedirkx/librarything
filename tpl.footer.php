@@ -2,7 +2,7 @@
 	<p>Loaded in <span id="domready">?</span> ms</p>
 
 	<details>
-		<summary>Requests</summary>
+		<summary><?= count($client->guzzle->log) ?> requests</summary>
 		<pre><? print_r($client->guzzle->log) ?></pre>
 	</details>
 

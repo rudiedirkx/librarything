@@ -36,15 +36,12 @@ tr.filter-hide {
 		</tr>
 	</thead>
 	<tbody>
-		<? foreach ($books as $book):
-			$entered = $book->getEntryDate();
-			$rating = $book->getRating();
-			?>
+		<? foreach ($books as $book): ?>
 			<tr data-collections="<?= html(json_encode($book->getCollections())) ?>">
-				<td><?= html($book->getAuthor()) ?></td>
-				<td><?= html($book->getTitle()) ?></td>
-				<td><?= $entered ? html($entered->format('d-M-Y')) : '' ?></td>
-				<td><?= $rating ? $book->getRating() . ' / 5' : '' ?></td>
+				<td><?= html($book->author) ?></td>
+				<td><?= html($book->title) ?></td>
+				<td><?= html($book->entry_date) ?></td>
+				<td><?= $book->rating ? $book->rating . ' / 5' : '' ?></td>
 				<td><?= implode(', ', $book->getCollections($skipCollections)) ?></td>
 			</tr>
 		<? endforeach ?>
