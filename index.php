@@ -18,6 +18,22 @@ div.table {
 tr.filter-hide {
 	display: none;
 }
+td.rating-1-5 {
+	background: red;
+}
+td.rating-2-5 {
+	background: orange;
+}
+td.rating-3-5 {
+	background: yellow;
+}
+td.rating-4-5 {
+	background: lime;
+}
+td.rating-5-5 {
+	background: green;
+	color: white;
+}
 </style>
 
 <h1><span id="filter-showing"><?= count($books) ?></span> / <?= count($books) ?> books</h1>
@@ -41,7 +57,7 @@ tr.filter-hide {
 				<td><?= html($book->author) ?></td>
 				<td><?= html($book->title) ?></td>
 				<td><?= html($book->entry_date) ?></td>
-				<td><?= $book->rating ? $book->rating . ' / 5' : '' ?></td>
+				<td class="rating-<?= $book->rating ?>-5"><?= $book->rating ? $book->rating . ' / 5' : '' ?></td>
 				<td><?= implode(', ', $book->getCollections($skipCollections)) ?></td>
 			</tr>
 		<? endforeach ?>
