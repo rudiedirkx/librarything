@@ -10,4 +10,4 @@ require 'vendor/autoload.php';
 
 header('Content-type: text/html; charset=utf-8');
 
-$client = new Client(new WebAuth(LT_USER_NAME, LT_USER_PASS));
+$client = new Client(new WebAuth(APP_COOKIE_FILE, LT_USER_NAME, LT_USER_PASS));

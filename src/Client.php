@@ -3,7 +3,6 @@
 namespace rdx\librarything;
 
 use GuzzleHttp\Client as Guzzle;
-use GuzzleHttp\Cookie\FileCookieJar;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\RedirectMiddleware;
@@ -119,7 +118,7 @@ class Client {
 	 *
 	 */
 	protected function setUpGuzzle() {
-		$cookies = $this->setUpCookieJar();
+		$cookies = $this->auth->cookies;
 		$stack = HandlerStack::create();
 		$this->guzzle = new Guzzle([
 			'base_uri' => $this->base,
@@ -149,14 +148,6 @@ class Client {
 		));
 
 		$this->guzzle->log = [];
-	}
-
-	/**
-	 *
-	 */
-	protected function setUpCookieJar() {
-		umask(0);
-		return new FileCookieJar(APP_COOKIE_FILE, true);
 	}
 
 }
