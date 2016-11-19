@@ -1,4 +1,19 @@
 {
+    "name": "rdx/librarything",
+    "description": "A very simple LibraryThing web scraper API",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Rudie Dirkx",
+            "email": "github@hotblocks.nl"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "rdx\\librarything\\": "src"
+        }
+    },
     "require": {
         "guzzlehttp/guzzle": "^6.1",
         "rdx/js-dom": "dev-master"
