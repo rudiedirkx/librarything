@@ -12,6 +12,10 @@ Library Thing API
 	$collections = $client->getCollections($books, $skipCollections);
 
 	foreach ($books as $book) {
-		var_dump($book->getTitle());
-		var_dump($book->getAuthor());
+		var_dump($book->title);
+		var_dump($book->author);
+		var_dump($book->entry_date);
+		var_dump($book->rating);
+		var_dump($book->collections);
+		var_dump($book->getCollections($skipCollections));
 	}
