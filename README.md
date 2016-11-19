@@ -1,13 +1,16 @@
 Library Thing API
 ====
 
+	use rdx\librarything\Client;
+	use rdx\librarything\WebAuth;
+
 	// Create an LT client.
 	$client = new Client(new WebAuth(LT_USER_NAME, LT_USER_PASS));
 
-	// Get all books from the catalogue. Returns array of BookRow.
+	// Get all books from the catalogue. Returns array of rdx\librarything\Book.
 	$books = $client->getCatalogue();
 
-	// Get all collections in this catalogue, and skip & remember the ones
+	// Get all collections in this catalogue. Optionally skip and remember the ones
 	// that are enabled in **every** book.
 	$collections = $client->getCollections($books, $skipCollections);
 
