@@ -2,7 +2,7 @@
 
 require 'inc.bootstrap.php';
 
-$client->ensureLogin();
+// $client->ensureLogin();
 $books = $client->getCatalogue();
 $collections = $client->getCollections($books, $skipCollections);
 
@@ -42,22 +42,22 @@ td.rating-5-5 {
 
 <div class="table">
 <table border="1" cellspacing="0" cellpadding="6">
-	<thead>
+	<thead id="sorters">
 		<tr>
-			<th>Author</th>
+			<th data-sort="author">Author</th>
 			<th>Title</th>
-			<th>Entry date</th>
-			<th>Rating</th>
+			<th data-sort="entry_date">Entry date</th>
+			<th data-sort="rating">Rating</th>
 			<th>Collections</th>
 		</tr>
 	</thead>
 	<tbody>
 		<? foreach ($books as $book): ?>
 			<tr data-collections="<?= html(json_encode($book->getCollections())) ?>">
-				<td><?= html($book->author) ?></td>
+				<td data-sort="author"><?= html($book->author) ?></td>
 				<td><?= html($book->title) ?></td>
-				<td><?= html($book->entry_date) ?></td>
-				<td class="rating-<?= $book->rating ?>-5"><?= $book->rating ? $book->rating . ' / 5' : '' ?></td>
+				<td data-sort="entry_date" nowrap><?= html($book->entry_date) ?></td>
+				<td data-sort="rating" data-value="<?= (5 - $book->rating) ?>" class="rating-<?= $book->rating ?>-5"><?= $book->rating ? $book->rating . ' / 5' : '' ?></td>
 				<td><?= implode(', ', $book->getCollections($skipCollections)) ?></td>
 			</tr>
 		<? endforeach ?>
@@ -66,9 +66,10 @@ td.rating-5-5 {
 </div>
 
 <script>
-var rows = document.querySelectorAll('tr[data-collections]');
+var rows = [].slice.call(document.querySelectorAll('tr[data-collections]'));
 var filterShowingElement = document.querySelector('#filter-showing');
 var filterCollectionElement = document.querySelector('#filter-collection');
+var sortersElement = document.querySelector('#sorters');
 
 for (var i = 0; i < rows.length; i++) {
 	rows[i]._collections = JSON.parse(rows[i].dataset.collections);
@@ -90,6 +91,28 @@ filterCollectionElement.value && filter();
 
 filterCollectionElement.onchange = function(e) {
 	filter();
+};
+
+sortersElement.onclick = function(e) {
+	var sorter = e.target.dataset.sort;
+	if (sorter) {
+		console.time('Sorting rows');
+		rows.sort(function(a, b) {
+			a = a.querySelector('td[data-sort="' + sorter + '"]');
+			a = a.dataset.value || a.textContent.trim();
+			b = b.querySelector('td[data-sort="' + sorter + '"]');
+			b = b.dataset.value || b.textContent.trim();
+			return a == b ? 0 : a > b ? 1 : -1;
+		});
+		console.timeEnd('Sorting rows');
+
+		console.time('Positioning rows');
+		var container = rows[0].parentNode;
+		for (var i = 0; i < rows.length; i++) {
+			container.appendChild(rows[i]);
+		}
+		console.timeEnd('Positioning rows');
+	}
 };
 </script>
 
