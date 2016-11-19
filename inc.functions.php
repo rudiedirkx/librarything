@@ -1,25 +1,7 @@
 <?php
 
-function get_request( $method, $function, $data = array() ) {
-	global $accessToken;
-	$data += array(
-		'method' => $method,
-		'function' => $function,
-		'key' => APP_KEY,
-		'secret' => APP_SECRET,
-		'token' => $accessToken,
-		'format' => 'json',
-	);
-	$url = LT_BASE_URL . '/services/rest/1.1/';
-	$http = HTTP::create($url, array(
-		'method' => 'POST',
-		'data' => $data,
-	));
-	return $http;
-}
-
 function html( $text ) {
-	return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+	return htmlspecialchars((string)$text, ENT_QUOTES, 'UTF-8') ?: htmlspecialchars((string)$text, ENT_QUOTES, 'ISO-8859-1');
 }
 
 function get_url( $path, $query = array() ) {
