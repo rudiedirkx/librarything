@@ -2,7 +2,7 @@
 
 require 'inc.bootstrap.php';
 
-// $client->ensureLogin();
+$client->ensureLogin();
 $books = $client->getCatalogue();
 $collections = $client->getCollections($books, $skipCollections);
 

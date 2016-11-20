@@ -104,10 +104,15 @@ class Client {
 	 *
 	 */
 	public function ensureLogin() {
-		// GET /home
-		$res = $this->guzzle->request('GET', '/home', []);
+		// GET /profile
+		$res = $this->guzzle->request('GET', '/profile', []);
 
-		if (strpos($res->getBody(), 'formusername')) {
+		$loggedIn = strpos($res->getBody(), 'Sign out') !== false;
+
+		if (!$loggedIn) {
+			// GET /
+			$res = $this->guzzle->request('GET', '/', []);
+
 			// POST /enter/start
 			// GET /enter/checkcookies/2403928250
 			// GET /enter/process/signinform
@@ -148,11 +153,16 @@ class Client {
 	protected function setUpLog(HandlerStack $stack) {
 		$stack->push(Middleware::tap(
 			function($request, $options) {
-				$this->guzzle->log[] = ['request' => (string) $request->getUri()];
+				$this->guzzle->log[] = [
+					'time' => microtime(1),
+					'request' => (string) $request->getUri(),
+				];
 			},
 			function($request, $options, $response) {
 				$response->then(function($response) {
-					$this->guzzle->log[ count($this->guzzle->log) - 1 ]['response'] = $response->getStatusCode();
+					$log = &$this->guzzle->log[ count($this->guzzle->log) - 1 ];
+					$log['time'] = microtime(1) - $log['time'];
+					$log['response'] = $response->getStatusCode();
 				});
 			}
 		));
