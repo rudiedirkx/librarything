@@ -2,11 +2,22 @@
 
 require 'inc.bootstrap.php';
 
-$client->ensureLogin();
-$books = $client->getCatalogue();
-$collections = $client->getCollections($books, $skipCollections);
+// $client->ensureLogin();
+
+if (isset($_POST['book'], $_POST['rating'])) {
+	if ($client->rateBook($_POST['book'], $_POST['rating'])) {
+		echo $_POST['rating'];
+	}
+	else {
+		echo '?';
+	}
+	exit;
+}
 
 include 'tpl.header.php';
+
+$books = $client->getCatalogue();
+$collections = $client->getCollections($books, $skipCollections);
 
 ?>
 
@@ -34,6 +45,9 @@ td.rating-5-5 {
 	background: green;
 	color: white;
 }
+a.rate-book {
+	display: block;
+}
 </style>
 
 <h1><span id="filter-showing"><?= count($books) ?></span> / <?= count($books) ?> books</h1>
@@ -53,11 +67,15 @@ td.rating-5-5 {
 	</thead>
 	<tbody>
 		<? foreach ($books as $book): ?>
-			<tr data-collections="<?= html(json_encode($book->getCollections())) ?>">
+			<tr data-id="<?= html($book->id) ?>" data-collections="<?= html(json_encode($book->getCollections())) ?>">
 				<td data-sort="author"><?= html($book->author) ?></td>
 				<td><?= html($book->title) ?></td>
 				<td data-sort="entry_date" nowrap><?= html($book->entry_date) ?></td>
-				<td data-sort="rating" data-value="<?= (5 - $book->rating) ?>" class="rating-<?= $book->rating ?>-5"><?= $book->rating ? $book->rating . ' / 5' : '' ?></td>
+				<td data-sort="rating" data-value="<?= (5 - $book->rating) ?>" class="rating-<?= $book->rating ?>-5">
+					<a class="rate-book" data-rating="<?= $book->rating ?>" href="#">
+						<?= $book->rating ? $book->rating . ' / 5' : '&nbsp;' ?>
+					</a>
+				</td>
 				<td><?= implode(', ', $book->getCollections($skipCollections)) ?></td>
 			</tr>
 		<? endforeach ?>
@@ -114,6 +132,31 @@ sortersElement.onclick = function(e) {
 		console.timeEnd('Positioning rows');
 	}
 };
+
+var raters = document.querySelectorAll('.rate-book');
+for (var i = 0; i < raters.length; i++) {
+	raters[i].onclick = function(e) {
+		e.preventDefault();
+		var a = this;
+
+		var rating = parseInt(a.dataset.rating);
+		rating = prompt('Rating', rating);
+		if (isNaN(parseInt(rating))) {
+			return;
+		}
+
+		var xhr = new XMLHttpRequest;
+		xhr.open('POST', '?', true);
+		xhr.onload = function(e) {
+			a.textContent = this.responseText + ' / 5';
+			a.parentNode.classList.remove('rating-' + a.dataset.rating + '-5');
+			a.dataset.rating = this.responseText;
+			a.parentNode.classList.add('rating-' + a.dataset.rating + '-5');
+		};
+		xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+		xhr.send('book=' + a.parentNode.parentNode.dataset.id + '&rating=' + rating);
+	};
+}
 </script>
 
 <?php

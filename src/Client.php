@@ -34,6 +34,23 @@ class Client {
 	/**
 	 *
 	 */
+	public function rateBook($id, $rating) {
+		$res = $this->guzzle->request('POST', '/ajax_setBookRating.php', [
+			'form_params' => [
+				'uid' => 'ErI40u79',
+				'book' => $id,
+				'editable' => '1',
+				'container' => 'rate-ult_128243263',
+				'style' => '0',
+				'rating' => (string)($rating * 2),
+			],
+		]);
+		return $res->getStatusCode() == 200;
+	}
+
+	/**
+	 *
+	 */
 	public function getCollections(array $books, &$skipCollections = []) {
 		// Gather all collections from all books
 		$collections = [];
@@ -104,14 +121,14 @@ class Client {
 	 *
 	 */
 	public function ensureLogin() {
-		// GET /profile
-		$res = $this->guzzle->request('GET', '/profile', []);
+		// GET /home
+		$res = $this->guzzle->request('GET', '/home', []);
 
 		$loggedIn = strpos($res->getBody(), 'Sign out') !== false;
 
 		if (!$loggedIn) {
 			// GET /
-			$res = $this->guzzle->request('GET', '/', []);
+			// $res = $this->guzzle->request('GET', '/', []);
 
 			// POST /enter/start
 			// GET /enter/checkcookies/2403928250
@@ -119,11 +136,11 @@ class Client {
 			// GET /home
 			// GET /
 			$res = $this->guzzle->request('POST', '/enter/start', [
-				'form_params' => array(
+				'form_params' => [
 					'formusername' => $this->auth->user,
 					'formpassword' => $this->auth->pass,
 					'index_signin_already' => 'Sign in',
-				),
+				],
 			]);
 		}
 
@@ -139,9 +156,9 @@ class Client {
 			'base_uri' => $this->base,
 			'handler' => $stack,
 			'cookies' => $cookies,
-			'allow_redirects' => array(
+			'allow_redirects' => [
 				'track_redirects' => true,
-			) + RedirectMiddleware::$defaultSettings,
+			] + RedirectMiddleware::$defaultSettings,
 		]);
 
 		$this->setUpLog($stack);

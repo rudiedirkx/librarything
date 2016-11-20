@@ -10,6 +10,7 @@ class Book {
 	 * Extract DOM node
 	 */
 	public function __construct(Node $node) {
+		$this->id = $node->getID();
 		$this->title = $node->getTitle();
 		$this->author = $node->getAuthor();
 		$this->rating = $node->getRating();

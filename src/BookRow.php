@@ -12,6 +12,12 @@ class BookRow extends Node {
 		return $node ? $node->innerText : '';
 	}
 
+	public function getID() {
+		if (preg_match('#catrow_(\d+)#', $this['id'], $match)) {
+			return $match[1];
+		}
+	}
+
 	public function getTitle() {
 		return $this->_plain($this->query('a.lt-title'));
 	}
