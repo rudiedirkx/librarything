@@ -4,20 +4,26 @@ require 'inc.bootstrap.php';
 
 // $client->ensureLogin();
 
+$books = $client->getCatalogue();
+$collections = $client->getCollections($books, $skipCollections);
+
 if (isset($_POST['book'], $_POST['rating'])) {
-	if ($client->rateBook($_POST['book'], $_POST['rating'])) {
-		echo $_POST['rating'];
+	if (isset($books[ $_POST['book'] ])) {
+		$book = $books[ $_POST['book'] ];
+
+		if ($client->rateBook($book, $_POST['rating'])) {
+			$client->setCatalogue($books);
+			echo $_POST['rating'];
+		}
+		else {
+			echo '?';
+		}
 	}
-	else {
-		echo '?';
-	}
+
 	exit;
 }
 
 include 'tpl.header.php';
-
-$books = $client->getCatalogue();
-$collections = $client->getCollections($books, $skipCollections);
 
 ?>
 
@@ -67,7 +73,7 @@ a.rate-book {
 	</thead>
 	<tbody>
 		<? foreach ($books as $book): ?>
-			<tr data-id="<?= html($book->id) ?>" data-collections="<?= html(json_encode($book->getCollections())) ?>">
+			<tr data-id="<?= html($book->id) ?>" data-collections="<?= html(json_encode(array_keys($book->getCollections($skipCollections)))) ?>">
 				<td data-sort="author"><?= html($book->author) ?></td>
 				<td><?= html($book->title) ?></td>
 				<td data-sort="entry_date" nowrap><?= html($book->entry_date) ?></td>
@@ -94,7 +100,7 @@ for (var i = 0; i < rows.length; i++) {
 }
 
 function filter() {
-	var value = filterCollectionElement.value;
+	var value = parseInt(filterCollectionElement.value);
 	var count = 0;
 	for (var i = 0; i < rows.length; i++) {
 		var hide = value && rows[i]._collections.indexOf(value) == -1;

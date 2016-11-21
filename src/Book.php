@@ -2,14 +2,14 @@
 
 namespace rdx\librarything;
 
-use rdx\jsdom\Node;
+use rdx\librarything\BookRow;
 
 class Book {
 
 	/**
 	 * Extract DOM node
 	 */
-	public function __construct(Node $node) {
+	public function __construct(BookRow $node) {
 		$this->id = $node->getID();
 		$this->title = $node->getTitle();
 		$this->author = $node->getAuthor();
@@ -25,9 +25,7 @@ class Book {
 		$collections = $this->collections;
 
 		if ($skipCollections) {
-			$collections = array_filter($collections, function($name) use ($skipCollections) {
-				return !in_array($name, $skipCollections);
-			});
+			$collections = array_diff_key($collections, $skipCollections);
 		}
 
 		return $collections;

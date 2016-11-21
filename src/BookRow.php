@@ -45,7 +45,7 @@ class BookRow extends Node {
 
 				$collections = [];
 				foreach ($nodes as $node) {
-					$collections[] = $node->innerText;
+					$collections[ $node['c_id'] ] = $node->innerText;
 				}
 
 				return $collections;

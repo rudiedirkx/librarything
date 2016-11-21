@@ -34,11 +34,30 @@ class Client {
 	/**
 	 *
 	 */
-	public function rateBook($id, $rating) {
+	public function toggleBookCollection(Book $book, $collectionId, $add = true) {
+		$res = $this->guzzle->request('POST', '/ajax_collectionsToggleBook.php', [
+			'form_params' => [
+				'bookid' => $book->id,
+				'c_id' => $collectionId,
+				'addRemove' => (int) $add,
+				'returnUI' => '1',
+				'containerID' => 'collections79005727',
+				'excludeContainer' => '1',
+			],
+		]);
+		return $res->getStatusCode() == 200;
+	}
+
+	/**
+	 *
+	 */
+	public function rateBook(Book $book, $rating) {
+		$book->rating = $rating;
+
 		$res = $this->guzzle->request('POST', '/ajax_setBookRating.php', [
 			'form_params' => [
 				'uid' => 'ErI40u79',
-				'book' => $id,
+				'book' => $book->id,
 				'editable' => '1',
 				'container' => 'rate-ult_128243263',
 				'style' => '0',
@@ -53,25 +72,30 @@ class Client {
 	 */
 	public function getCollections(array $books, &$skipCollections = []) {
 		// Gather all collections from all books
-		$collections = [];
+		$collections = $counts = [];
 		foreach ($books as $book) {
-			foreach ($book->getCollections() as $collection) {
-				@$collections[$collection]++;
+			foreach ($book->getCollections() as $id => $name) {
+				@$counts[$id]++;
+				@$collections[$id] = $name;
 			}
 		}
 
 		// Skip and remember the ones that exist everywhere
-		foreach ($collections as $name => $usage) {
+		foreach ($counts as $id => $usage) {
 			if ($usage == count($books)) {
-				$skipCollections[] = $name;
-				unset($collections[$name]);
+				$skipCollections[$id] = $collections[$id];
+				unset($collections[$id]);
 			}
 		}
 
-		$collections = array_keys($collections);
-		$collections = array_combine($collections, $collections);
-
 		return $collections;
+	}
+
+	/**
+	 *
+	 */
+	public function setCatalogue(array $books) {
+		return $this->cache->store('catalogue', $books, false);
 	}
 
 	/**
@@ -105,11 +129,11 @@ class Client {
 				$dom = Node::create($html);
 				$rows = $dom->queryAll('tr.cat_catrow', BookRow::class);
 				foreach ($rows as $row) {
-					$books[] = new Book($row);
+					$books[ $row->getID() ] = new Book($row);
 				}
 			}
 
-			usort($books, function($a, $b) {
+			uasort($books, function($a, $b) {
 				return strcmp($b->entry_date, $a->entry_date);
 			});
 

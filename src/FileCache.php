@@ -52,10 +52,10 @@ class FileCache {
 	/**
 	 *
 	 */
-	public function store($name, $data) {
+	public function store($name, $data, $touch = true) {
 		$file = $this->getFile($name);
 
-		return $this->encode($file, $data);
+		return $this->encode($file, $data, $touch);
 	}
 
 	/**
@@ -68,11 +68,19 @@ class FileCache {
 	/**
 	 *
 	 */
-	protected function encode($file, $data) {
+	protected function encode($file, $data, $touch = true) {
+		$mtime = file_exists($file) ? filemtime($file) : 0;
+
 		@touch($file);
 		@chmod($file, 0600);
 
-		return file_put_contents($file, serialize($data));
+		$put = file_put_contents($file, serialize($data));
+
+		if ($mtime && !$touch) {
+			touch($file, $mtime);
+		}
+
+		return $put;
 	}
 
 	/**
