@@ -28,12 +28,11 @@ include 'tpl.header.php';
 ?>
 
 <style>
-div.table {
-	width: 100%;
-	overflow: auto;
-}
 tr.filter-hide {
 	display: none;
+}
+td.rating {
+	color: black;
 }
 td.rating-1-5 {
 	background: red;
@@ -53,6 +52,12 @@ td.rating-5-5 {
 }
 a.rate-book {
 	display: block;
+	color: inherit;
+	text-decoration: none;
+	outline: dotted 1px #888;
+}
+a.rate-book.working {
+	background-color: white;
 }
 </style>
 
@@ -77,7 +82,7 @@ a.rate-book {
 				<td data-sort="author"><?= html($book->author) ?></td>
 				<td><?= html($book->title) ?></td>
 				<td data-sort="entry_date" nowrap><?= html($book->entry_date) ?></td>
-				<td data-sort="rating" data-value="<?= (5 - $book->rating) ?>" class="rating-<?= $book->rating ?>-5">
+				<td data-sort="rating" data-value="<?= (5 - $book->rating) ?>" class="rating rating-<?= $book->rating ?>-5">
 					<a class="rate-book" data-rating="<?= $book->rating ?>" href="#">
 						<?= $book->rating ? $book->rating . ' / 5' : '&nbsp;' ?>
 					</a>
@@ -144,6 +149,7 @@ for (var i = 0; i < raters.length; i++) {
 	raters[i].onclick = function(e) {
 		e.preventDefault();
 		var a = this;
+		a.classList.add('working');
 
 		var rating = parseInt(a.dataset.rating);
 		rating = prompt('Rating', rating);
@@ -158,6 +164,7 @@ for (var i = 0; i < raters.length; i++) {
 			a.parentNode.classList.remove('rating-' + a.dataset.rating + '-5');
 			a.dataset.rating = this.responseText;
 			a.parentNode.classList.add('rating-' + a.dataset.rating + '-5');
+			a.classList.remove('working');
 		};
 		xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 		xhr.send('book=' + a.parentNode.parentNode.dataset.id + '&rating=' + rating);
