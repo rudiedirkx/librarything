@@ -34,7 +34,7 @@ class Client {
 	/**
 	 *
 	 */
-	public function toggleBookCollection(Book $book, $collectionId, $add = true) {
+	public function toggleBookCollection(Book $book, $collectionId, $add) {
 		$res = $this->guzzle->request('POST', '/ajax_collectionsToggleBook.php', [
 			'form_params' => [
 				'bookid' => $book->id,

@@ -23,6 +23,24 @@ if (isset($_POST['book'], $_POST['rating'])) {
 	exit;
 }
 
+if (isset($_POST['book'], $_POST['collection'], $_POST['add'])) {
+	if (isset($books[ $_POST['book'] ])) {
+		$book = $books[ $_POST['book'] ];
+
+		if ($client->toggleBookCollection($book, $_POST['collection'], (bool) $_POST['add'])) {
+			$book->toggleCollection($collections, $_POST['collection'], $_POST['add']);
+
+			$client->setCatalogue($books);
+			echo '1';
+		}
+		else {
+			echo '?';
+		}
+	}
+
+	exit;
+}
+
 include 'tpl.header.php';
 
 ?>
@@ -59,6 +77,23 @@ a.rate-book {
 a.rate-book.working {
 	background-color: white;
 }
+
+.collections input {
+	visibility: hidden;
+	position: absolute;
+	z-index: -1;
+}
+.collections label {
+	color: #bbb;
+	display: inline-block;
+}
+.collections :checked + label {
+	color: black;
+	font-weight: bold;
+}
+.catalogue:not(.collecting) .collections input:not(:checked) + label {
+	display: none;
+}
 </style>
 
 <h1><span id="filter-showing"><?= count($books) ?></span> / <?= count($books) ?> books</h1>
@@ -66,14 +101,14 @@ a.rate-book.working {
 <p><select id="filter-collection"><?= html_options($collections, null, '-- All') ?></select></p>
 
 <div class="table">
-<table border="1" cellspacing="0" cellpadding="6">
+<table class="catalogue" border="1" cellspacing="0" cellpadding="6">
 	<thead id="sorters">
 		<tr>
 			<th data-sort="author">Author</th>
 			<th>Title</th>
 			<th data-sort="entry_date">Entry date</th>
 			<th data-sort="rating">Rating</th>
-			<th>Collections</th>
+			<th onclick="this.parentNode.parentNode.parentNode.classList.toggle('collecting')">Collections</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -87,7 +122,14 @@ a.rate-book.working {
 						<?= $book->rating ? $book->rating . ' / 5' : '&nbsp;' ?>
 					</a>
 				</td>
-				<td><?= implode(', ', $book->getCollections($skipCollections)) ?></td>
+				<td class="collections">
+					<? foreach ($collections as $id => $name):
+						$on = $book->hasCollection($id);
+						?>
+						<input  id="b-<?= $book->id ?>-c-<?= $id ?>" type="checkbox" value="<?= $id ?>" <?= $on ? 'checked' : '' ?> />
+						<label for="b-<?= $book->id ?>-c-<?= $id ?>"><?= html($name) ?></label>
+					<? endforeach ?>
+				</td>
 			</tr>
 		<? endforeach ?>
 	</tbody>
@@ -99,6 +141,10 @@ var rows = [].slice.call(document.querySelectorAll('tr[data-collections]'));
 var filterShowingElement = document.querySelector('#filter-showing');
 var filterCollectionElement = document.querySelector('#filter-collection');
 var sortersElement = document.querySelector('#sorters');
+
+/**
+ * FILTER
+ */
 
 for (var i = 0; i < rows.length; i++) {
 	rows[i]._collections = JSON.parse(rows[i].dataset.collections);
@@ -117,10 +163,13 @@ function filter() {
 }
 
 filterCollectionElement.value && filter();
-
 filterCollectionElement.onchange = function(e) {
 	filter();
 };
+
+/**
+ * SORT
+ */
 
 sortersElement.onclick = function(e) {
 	var sorter = e.target.dataset.sort;
@@ -143,6 +192,10 @@ sortersElement.onclick = function(e) {
 		console.timeEnd('Positioning rows');
 	}
 };
+
+/**
+ * RATE
+ */
 
 var raters = document.querySelectorAll('.rate-book');
 for (var i = 0; i < raters.length; i++) {
@@ -168,6 +221,30 @@ for (var i = 0; i < raters.length; i++) {
 		};
 		xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 		xhr.send('book=' + a.parentNode.parentNode.dataset.id + '&rating=' + rating);
+	};
+}
+
+/**
+ * COLLECT
+ */
+
+var collecters = document.querySelectorAll('.collections input');
+for (var i = 0; i < collecters.length; i++) {
+	collecters[i].onchange = function(e) {
+		e.preventDefault();
+		var inp = this;
+		var lab = this.nextElementSibling;
+		lab.classList.add('working');
+		inp.disabled = true;
+
+		var xhr = new XMLHttpRequest;
+		xhr.open('POST', '?', true);
+		xhr.onload = function(e) {
+			lab.classList.remove('working');
+			inp.disabled = false;
+		};
+		xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+		xhr.send('book=' + inp.parentNode.parentNode.dataset.id + '&collection=' + inp.value + '&add=' + Number(inp.checked));
 	};
 }
 </script>

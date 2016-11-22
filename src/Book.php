@@ -16,6 +16,21 @@ class Book {
 		$this->rating = $node->getRating();
 		$this->entry_date = $node->getEntryDate();
 		$this->collections = $node->getCollections();
+		ksort($this->collections);
+	}
+
+	/**
+	 *
+	 */
+	public function toggleCollection(array $collections, $collectionId, $add) {
+		if ($add) {
+			$this->collections[$collectionId] = $collections[$collectionId];
+		}
+		else {
+			unset($this->collections[$collectionId]);
+		}
+
+		ksort($this->collections);
 	}
 
 	/**
@@ -29,6 +44,13 @@ class Book {
 		}
 
 		return $collections;
+	}
+
+	/**
+	 *
+	 */
+	public function hasCollection($id) {
+		return isset($this->collections[$id]);
 	}
 
 }
