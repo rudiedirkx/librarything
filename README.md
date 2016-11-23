@@ -21,4 +21,9 @@ Library Thing API
 		var_dump($book->rating);
 		var_dump($book->collections);
 		var_dump($book->getCollections($skipCollections));
+		var_dump($book->hasCollection(13));
 	}
+
+	$client->rateBook($book, 3); // 3 / 5
+
+	$client->toggleBookCollection($book, $collectionId, true); // true to add, false to remove
