@@ -9,7 +9,7 @@ class Book {
 	/**
 	 * Extract DOM node
 	 */
-	public function __construct(BookRow $node) {
+	public function __construct( BookRow $node ) {
 		$this->id = $node->getID();
 		$this->title = $node->getTitle();
 		$this->author = $node->getAuthor();
@@ -22,8 +22,8 @@ class Book {
 	/**
 	 *
 	 */
-	public function toggleCollection(array $collections, $collectionId, $add) {
-		if ($add) {
+	public function toggleCollection( array $collections, $collectionId, $add ) {
+		if ( $add ) {
 			$this->collections[$collectionId] = $collections[$collectionId];
 		}
 		else {
@@ -36,10 +36,10 @@ class Book {
 	/**
 	 *
 	 */
-	public function getCollections(array $skipCollections = []) {
+	public function getCollections( array $skipCollections = [] ) {
 		$collections = $this->collections;
 
-		if ($skipCollections) {
+		if ( $skipCollections ) {
 			$collections = array_diff_key($collections, $skipCollections);
 		}
 
@@ -49,7 +49,7 @@ class Book {
 	/**
 	 *
 	 */
-	public function hasCollection($id) {
+	public function hasCollection( $id ) {
 		return isset($this->collections[$id]);
 	}
 

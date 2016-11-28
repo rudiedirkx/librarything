@@ -24,7 +24,7 @@ class Client {
 	/**
 	 * Dependency constructor
 	 */
-	public function __construct(WebAuth $auth, FileCache $cache) {
+	public function __construct( WebAuth $auth, FileCache $cache ) {
 		$this->auth = $auth;
 		$this->cache = $cache;
 
@@ -34,7 +34,7 @@ class Client {
 	/**
 	 *
 	 */
-	public function toggleBookCollection(Book $book, $collectionId, $add) {
+	public function toggleBookCollection( Book $book, $collectionId, $add ) {
 		$res = $this->guzzle->request('POST', '/ajax_collectionsToggleBook.php', [
 			'form_params' => [
 				'bookid' => $book->id,
@@ -51,7 +51,7 @@ class Client {
 	/**
 	 *
 	 */
-	public function rateBook(Book $book, $rating) {
+	public function rateBook( Book $book, $rating ) {
 		$book->rating = $rating;
 
 		$res = $this->guzzle->request('POST', '/ajax_setBookRating.php', [
@@ -61,7 +61,7 @@ class Client {
 				'editable' => '1',
 				'container' => 'rate-ult_128243263',
 				'style' => '0',
-				'rating' => (string)($rating * 2),
+				'rating' => (string) ($rating * 2),
 			],
 		]);
 		return $res->getStatusCode() == 200;
@@ -70,19 +70,19 @@ class Client {
 	/**
 	 *
 	 */
-	public function getCollections(array $books, &$skipCollections = []) {
+	public function getCollections( array $books, &$skipCollections = [] ) {
 		// Gather all collections from all books
 		$collections = $counts = [];
-		foreach ($books as $book) {
-			foreach ($book->getCollections() as $id => $name) {
+		foreach ( $books as $book ) {
+			foreach ( $book->getCollections() as $id => $name ) {
 				@$counts[$id]++;
 				@$collections[$id] = $name;
 			}
 		}
 
 		// Skip and remember the ones that exist everywhere
-		foreach ($counts as $id => $usage) {
-			if ($usage == count($books)) {
+		foreach ( $counts as $id => $usage ) {
+			if ( $usage == count($books) ) {
 				$skipCollections[$id] = $collections[$id];
 				unset($collections[$id]);
 			}
@@ -94,7 +94,7 @@ class Client {
 	/**
 	 *
 	 */
-	public function setCatalogue(array $books) {
+	public function setCatalogue( array $books ) {
 		return $this->cache->store('catalogue', $books, false);
 	}
 
@@ -107,33 +107,33 @@ class Client {
 			$res = $this->guzzle->request('GET', '/catalog_bottom.php', []);
 			$htmls = [$res->getBody()];
 
-			$getNextPageUri = function($html) {
+			$getNextPageUri = function( $html ) {
 				$dom = Node::create($html);
 				$els = $dom->queryAll('.pageShuttleButton');
-				foreach ($els as $el) {
-					if ($el->innerText == 'next page') {
+				foreach ( $els as $el ) {
+					if ( $el->innerText == 'next page' ) {
 						return $el;
 					}
 				}
 			};
 
 			// Get all next pages
-			while ($next = $getNextPageUri(end($htmls))) {
+			while ( $next = $getNextPageUri(end($htmls)) ) {
 				$res = $this->guzzle->request('GET', $next['href'], []);
 				$htmls[] = $res->getBody();
 			}
 
 			// Collect Node objects, one for every row
 			$books = [];
-			foreach ($htmls as $html) {
+			foreach ( $htmls as $html ) {
 				$dom = Node::create($html);
 				$rows = $dom->queryAll('tr.cat_catrow', BookRow::class);
-				foreach ($rows as $row) {
-					$books[ $row->getID() ] = new Book($row);
+				foreach ( $rows as $row ) {
+					$books[$row->getID()] = new Book($row);
 				}
 			}
 
-			uasort($books, function($a, $b) {
+			uasort($books, function( $a, $b ) {
 				return strcmp($b->entry_date, $a->entry_date);
 			});
 
@@ -150,7 +150,7 @@ class Client {
 
 		$loggedIn = strpos($res->getBody(), 'Sign out') !== false;
 
-		if (!$loggedIn) {
+		if ( !$loggedIn ) {
 			// GET /
 			// $res = $this->guzzle->request('GET', '/', []);
 
@@ -191,17 +191,17 @@ class Client {
 	/**
 	 *
 	 */
-	protected function setUpLog(HandlerStack $stack) {
+	protected function setUpLog( HandlerStack $stack ) {
 		$stack->push(Middleware::tap(
-			function($request, $options) {
+			function( $request, $options ) {
 				$this->guzzle->log[] = [
 					'time' => microtime(1),
 					'request' => (string) $request->getUri(),
 				];
 			},
-			function($request, $options, $response) {
-				$response->then(function($response) {
-					$log = &$this->guzzle->log[ count($this->guzzle->log) - 1 ];
+			function( $request, $options, $response ) {
+				$response->then(function( $response ) {
+					$log = &$this->guzzle->log[count($this->guzzle->log) - 1];
 					$log['time'] = microtime(1) - $log['time'];
 					$log['response'] = $response->getStatusCode();
 				});

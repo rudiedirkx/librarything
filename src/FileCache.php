@@ -12,7 +12,7 @@ class FileCache {
 	/**
 	 * Dependency constructor
 	 */
-	public function __construct($dir, $ttl) {
+	public function __construct( $dir, $ttl ) {
 		$this->dir = rtrim($dir, '\\/');
 		$this->ttl = $ttl;
 
@@ -23,24 +23,24 @@ class FileCache {
 	/**
 	 *
 	 */
-	public function retrieve($name, callable $callback) {
+	public function retrieve( $name, callable $callback ) {
 		$file = $this->getFile($name);
 
 		// Must get live data
-		if (!file_exists($file)) {
+		if ( !file_exists($file) ) {
 			$data = $callback();
 			$this->store($name, $data);
 			return $data;
 		}
 
 		// Try to get live data, or fall back to old cache
-		if (filemtime($file) + $this->ttl < time()) {
+		if ( filemtime($file) + $this->ttl < time() ) {
 			try {
 				$data = $callback();
 				$this->store($name, $data);
 				return $data;
 			}
-			catch (Exception $ex) {
+			catch ( Exception $ex ) {
 				return $this->decode($file);
 			}
 		}
@@ -52,7 +52,7 @@ class FileCache {
 	/**
 	 *
 	 */
-	public function store($name, $data, $touch = true) {
+	public function store( $name, $data, $touch = true ) {
 		$file = $this->getFile($name);
 
 		return $this->encode($file, $data, $touch);
@@ -61,14 +61,14 @@ class FileCache {
 	/**
 	 *
 	 */
-	protected function decode($file) {
+	protected function decode( $file ) {
 		return unserialize(file_get_contents($file));
 	}
 
 	/**
 	 *
 	 */
-	protected function encode($file, $data, $touch = true) {
+	protected function encode( $file, $data, $touch = true ) {
 		$mtime = file_exists($file) ? filemtime($file) : 0;
 
 		@touch($file);
@@ -76,7 +76,7 @@ class FileCache {
 
 		$put = file_put_contents($file, serialize($data));
 
-		if ($mtime && !$touch) {
+		if ( $mtime && !$touch ) {
 			touch($file, $mtime);
 		}
 
@@ -86,7 +86,7 @@ class FileCache {
 	/**
 	 *
 	 */
-	protected function getFile($name) {
+	protected function getFile( $name ) {
 		return $this->dir . '/' . preg_replace('#[^\w\-]#i', '', $name) . '.bin';
 	}
 
