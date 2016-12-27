@@ -3,14 +3,15 @@
 namespace rdx\librarything;
 
 use GuzzleHttp\Client as Guzzle;
+use GuzzleHttp\Cookie\SetCookie;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\RedirectMiddleware;
 use rdx\jsdom\Node;
 use rdx\librarything\Book;
+use rdx\librarything\BookRow;
 use rdx\librarything\FileCache;
 use rdx\librarything\WebAuth;
-use rdx\librarything\BookRow;
 
 class Client {
 
@@ -103,6 +104,14 @@ class Client {
 	 */
 	public function getCatalogue() {
 		return $this->cache->retrieve('catalogue', function() {
+			// Reset collection filter
+			$this->auth->cookies->setCookie(new SetCookie([
+				'Name' => 'collectionPick_change',
+				'Value' => '-1',
+				'Domain' => 'www.librarything.com',
+				'Expires' => time() + 999999,
+			]));
+
 			// Get the first page
 			$res = $this->guzzle->request('GET', '/catalog_bottom.php', []);
 			$htmls = [$res->getBody()];

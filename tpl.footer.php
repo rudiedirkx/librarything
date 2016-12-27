@@ -6,6 +6,8 @@
 		<pre><? print_r($client->guzzle->log) ?></pre>
 	</details>
 
+	<br />
+
 	<script>
 	window.onload = function() {
 		setTimeout(function() {
