@@ -91,7 +91,7 @@ a.rate-book.working {
 	color: black;
 	font-weight: bold;
 }
-.catalogue:not(.collecting) .collections input:not(:checked) + label {
+.catalogue:not(.collecting) .collections input:not(:checked) + label:not(.working) {
 	display: none;
 }
 </style>
