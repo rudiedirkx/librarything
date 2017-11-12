@@ -146,9 +146,10 @@ var sortersElement = document.querySelector('#sorters');
  * FILTER
  */
 
-for (var i = 0; i < rows.length; i++) {
-	rows[i]._collections = JSON.parse(rows[i].dataset.collections);
+function setCollections(row) {
+	row._collections = JSON.parse(row.dataset.collections);
 }
+[].map.call(rows, setCollections);
 
 function filter() {
 	var value = parseInt(filterCollectionElement.value);
@@ -242,6 +243,16 @@ for (var i = 0; i < collecters.length; i++) {
 		xhr.onload = function(e) {
 			lab.classList.remove('working');
 			inp.disabled = false;
+
+			var el = inp;
+			while (el.nodeName != 'TR') {
+				el = el.parentNode;
+			}
+			var ids = [].map.call(el.querySelectorAll('.collections :checked'), function(cb) {
+				return parseInt(cb.value);
+			});
+			el.dataset.collections = JSON.stringify(ids);
+			setCollections(el);
 		};
 		xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 		xhr.send('book=' + inp.parentNode.parentNode.dataset.id + '&collection=' + inp.value + '&add=' + Number(inp.checked));
