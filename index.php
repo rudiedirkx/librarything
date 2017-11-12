@@ -98,7 +98,10 @@ a.rate-book.working {
 
 <h1><span id="filter-showing"><?= count($books) ?></span> / <?= count($books) ?> books</h1>
 
-<p><select id="filter-collection"><?= html_options($collections, null, '-- All') ?></select></p>
+<p>
+	<select id="filter-collection"><?= html_options($collections, null, '-- All') ?></select>
+	<input id="filter-text" type="search" placeholder="Author & title..." />
+</p>
 
 <div class="table">
 <table class="catalogue" border="1" cellspacing="0" cellpadding="6">
@@ -140,6 +143,7 @@ a.rate-book.working {
 var rows = [].slice.call(document.querySelectorAll('tr[data-collections]'));
 var filterShowingElement = document.querySelector('#filter-showing');
 var filterCollectionElement = document.querySelector('#filter-collection');
+var filterTextElement = document.querySelector('#filter-text');
 var sortersElement = document.querySelector('#sorters');
 
 /**
@@ -152,10 +156,14 @@ function setCollections(row) {
 [].map.call(rows, setCollections);
 
 function filter() {
-	var value = parseInt(filterCollectionElement.value);
+	var collValue = parseInt(filterCollectionElement.value) || 0;
+	var textValue = filterTextElement.value.trim().toLowerCase();
+
 	var count = 0;
 	for (var i = 0; i < rows.length; i++) {
-		var hide = value && rows[i]._collections.indexOf(value) == -1;
+		var collHide = collValue && rows[i]._collections.indexOf(collValue) == -1;
+		var textHide = textValue && rows[i].textContent.toLowerCase().indexOf(textValue) == -1;
+		var hide = collHide || textHide;
 		rows[i].classList[hide ? 'add' : 'remove']('filter-hide');
 		count += hide ? 0 : 1;
 	}
@@ -163,8 +171,11 @@ function filter() {
 	filterShowingElement.textContent = count;
 }
 
-filterCollectionElement.value && filter();
+(filterCollectionElement.value || filterTextElement.value) && filter();
 filterCollectionElement.onchange = function(e) {
+	filter();
+};
+filterTextElement.oninput = function(e) {
 	filter();
 };
 
