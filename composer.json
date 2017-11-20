@@ -16,7 +16,6 @@
     },
     "require": {
         "guzzlehttp/guzzle": "^6.1",
-        "rdx/js-dom": "dev-master"
-    },
-    "minimum-stability": "dev"
+        "rdx/js-dom": "^1.0"
+    }
 }
