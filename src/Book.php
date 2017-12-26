@@ -13,6 +13,7 @@ class Book {
 		$this->id = $node->getID();
 		$this->title = $node->getTitle();
 		$this->author = $node->getAuthor();
+		$this->year = $node->getYear();
 		$this->rating = $node->getRating();
 		$this->entry_date = $node->getEntryDate();
 		$this->collections = $node->getCollections();

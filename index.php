@@ -46,6 +46,17 @@ include 'tpl.header.php';
 ?>
 
 <style>
+th[data-sort] {
+	cursor: pointer;
+	white-space: nowrap;
+}
+th[data-sort]:after {
+	content: " ⇕";
+}
+th[data-sort]:not(.sorting):after {
+	color: #ccc;
+}
+
 tr.filter-hide {
 	display: none;
 }
@@ -91,7 +102,8 @@ a.rate-book.working {
 	color: black;
 	font-weight: bold;
 }
-.catalogue:not(.collecting) .collections input:not(:checked) + label:not(.working) {
+.catalogue:not(.collecting) .collections input:not(:checked) + label:not(.working),
+.catalogue:not(.collecting) .collections input:not(:checked) + label:not(.working) + br {
 	display: none;
 }
 </style>
@@ -109,7 +121,8 @@ a.rate-book.working {
 		<tr>
 			<th data-sort="author">Author</th>
 			<th>Title</th>
-			<th data-sort="entry_date">Entry date</th>
+			<th data-sort="year">Year</th>
+			<th data-sort="entry_date" class="sorting">Entry date</th>
 			<th data-sort="rating">Rating</th>
 			<th onclick="this.parentNode.parentNode.parentNode.classList.toggle('collecting')">Collections</th>
 		</tr>
@@ -119,6 +132,7 @@ a.rate-book.working {
 			<tr data-id="<?= html($book->id) ?>" data-collections="<?= html(json_encode(array_keys($book->getCollections($skipCollections)))) ?>">
 				<td data-sort="author"><?= html($book->author) ?></td>
 				<td><?= html($book->title) ?></td>
+				<td data-sort="year"><?= html($book->year) ?></td>
 				<td data-sort="entry_date" nowrap><?= html($book->entry_date) ?></td>
 				<td data-sort="rating" data-value="<?= (5 - $book->rating) ?>" class="rating rating-<?= $book->rating ?>-5">
 					<a class="rate-book" data-rating="<?= $book->rating ?>" href="#">
@@ -131,6 +145,7 @@ a.rate-book.working {
 						?>
 						<input  id="b-<?= $book->id ?>-c-<?= $id ?>" type="checkbox" value="<?= $id ?>" <?= $on ? 'checked' : '' ?> />
 						<label for="b-<?= $book->id ?>-c-<?= $id ?>"><?= html($name) ?></label>
+						<br>
 					<? endforeach ?>
 				</td>
 			</tr>
@@ -186,13 +201,17 @@ filterTextElement.oninput = function(e) {
 sortersElement.onclick = function(e) {
 	var sorter = e.target.dataset.sort;
 	if (sorter) {
+		var prevSort = document.querySelector('.sorting');
+		prevSort && prevSort.classList.remove('sorting');
+		e.target.classList.add('sorting');
+
 		console.time('Sorting rows');
 		rows.sort(function(a, b) {
-			a = a.querySelector('td[data-sort="' + sorter + '"]');
-			a = a.dataset.value || a.textContent.trim();
-			b = b.querySelector('td[data-sort="' + sorter + '"]');
-			b = b.dataset.value || b.textContent.trim();
-			return a == b ? 0 : a > b ? 1 : -1;
+			var va = a.querySelector('td[data-sort="' + sorter + '"]');
+			va = va.dataset.value || va.textContent.trim();
+			var vb = b.querySelector('td[data-sort="' + sorter + '"]');
+			vb = vb.dataset.value || vb.textContent.trim();
+			return va == vb ? (a.dataset.id - b.dataset.id) : va > vb ? 1 : -1;
 		});
 		console.timeEnd('Sorting rows');
 

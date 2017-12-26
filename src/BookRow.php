@@ -26,6 +26,10 @@ class BookRow extends Node {
 		return $this->_plain($this->query('a.lt-author'));
 	}
 
+	public function getYear() {
+		return trim($this->_plain($this->query('span.lt-date')), '?') ?: null;
+	}
+
 	public function getRating() {
 		return ((int) $this->query('input[name="form_rating"]')['value']) / 2;
 	}
