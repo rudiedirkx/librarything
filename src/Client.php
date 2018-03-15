@@ -67,7 +67,7 @@ class Client {
 	/**
 	 *
 	 */
-	public function markIrrelevantCollections( array $collections, array $books ) {
+	public function markCollections( array $collections, array $books ) {
 		$used = [];
 		foreach ( $books as $book ) {
 			foreach ( $book->collections as $id ) {
@@ -76,7 +76,8 @@ class Client {
 		}
 
 		foreach ( $collections as $id => $collection ) {
-			if ( @$used[$id] === count($books) ) {
+			$collection->used = (int) @$used[$id];
+			if ( $collection->used === count($books) ) {
 				$collection->relevant = false;
 			}
 		}

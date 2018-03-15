@@ -1,12 +1,14 @@
 <?php
 
+use rdx\librarything\Collection;
+
 require 'inc.bootstrap.php';
 
 $client->ensureLogin();
 
 $books = $client->getCatalogue();
 $collections = $client->getCollections();
-$client->markIrrelevantCollections($collections, $books);
+$client->markCollections($collections, $books);
 
 if (isset($_POST['book'], $_POST['rating'])) {
 	if (isset($books[ $_POST['book'] ])) {
@@ -43,6 +45,10 @@ if (isset($_POST['book'], $_POST['collection'], $_POST['add'])) {
 }
 
 include 'tpl.header.php';
+
+$collectionFilterOptions = array_map(function(Collection $collection) {
+	return "$collection ({$collection->used})";
+}, $collections);
 
 ?>
 
@@ -114,7 +120,7 @@ a.rate-book.working {
 <h1><span id="filter-showing"><?= count($books) ?></span> / <?= count($books) ?> books</h1>
 
 <p>
-	<select id="filter-collection"><?= html_options($collections, null, '-- All') ?></select>
+	<select id="filter-collection"><?= html_options($collectionFilterOptions, null, '-- All') ?></select>
 	<input id="filter-text" type="search" placeholder="Author & title..." />
 </p>
 
