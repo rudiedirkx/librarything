@@ -17,7 +17,7 @@ class FileCache {
 		$this->ttl = $ttl;
 
 		@mkdir($dir);
-		@chmod($dir, 0700);
+		@chmod($dir, 0777);
 	}
 
 	/**
@@ -72,7 +72,7 @@ class FileCache {
 		$mtime = file_exists($file) ? filemtime($file) : 0;
 
 		@touch($file);
-		@chmod($file, 0600);
+		@chmod($file, 0666);
 
 		$put = file_put_contents($file, serialize($data));
 

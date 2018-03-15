@@ -2,8 +2,6 @@
 
 namespace rdx\librarything;
 
-use rdx\librarything\BookRow;
-
 class Book {
 
 	/**
@@ -16,42 +14,29 @@ class Book {
 		$this->year = $node->getYear();
 		$this->rating = $node->getRating();
 		$this->entry_date = $node->getEntryDate();
-		$this->collections = $node->getCollections();
-		ksort($this->collections);
+		$this->collections = array_map('intval', array_keys($node->getCollections()));
 	}
 
 	/**
 	 *
 	 */
-	public function toggleCollection( array $collections, $collectionId, $add ) {
+	public function toggleCollection( $collectionId, $add ) {
 		if ( $add ) {
-			$this->collections[$collectionId] = $collections[$collectionId];
+			$this->collections[] = (int) $collectionId;
 		}
 		else {
-			unset($this->collections[$collectionId]);
+			$i = array_search((int) $collectionId, $this->collections);
+			if ( $i !== false ) {
+				array_splice($this->collections, $i, 1);
+			}
 		}
-
-		ksort($this->collections);
-	}
-
-	/**
-	 *
-	 */
-	public function getCollections( array $skipCollections = [] ) {
-		$collections = $this->collections;
-
-		if ( $skipCollections ) {
-			$collections = array_diff_key($collections, $skipCollections);
-		}
-
-		return $collections;
 	}
 
 	/**
 	 *
 	 */
 	public function hasCollection( $id ) {
-		return isset($this->collections[$id]);
+		return in_array((int) $id, $this->collections);
 	}
 
 }

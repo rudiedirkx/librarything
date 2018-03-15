@@ -10,9 +10,8 @@ Library Thing API
 	// Get all books from the catalogue. Returns array of rdx\librarything\Book.
 	$books = $client->getCatalogue();
 
-	// Get all collections in this catalogue. Optionally skip and remember the ones
-	// that are enabled in **every** book.
-	$collections = $client->getCollections($books, $skipCollections);
+	// Get all collections.
+	$collections = $client->getCollections();
 
 	foreach ($books as $book) {
 		var_dump($book->title);
@@ -20,7 +19,7 @@ Library Thing API
 		var_dump($book->entry_date);
 		var_dump($book->rating);
 		var_dump($book->collections);
-		var_dump($book->getCollections($skipCollections));
+		var_dump($book->getCollections());
 		var_dump($book->hasCollection(13));
 	}
 

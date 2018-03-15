@@ -5,7 +5,8 @@ require 'inc.bootstrap.php';
 $client->ensureLogin();
 
 $books = $client->getCatalogue();
-$collections = $client->getCollections($books, $skipCollections);
+$collections = $client->getCollections();
+$client->markIrrelevantCollections($collections, $books);
 
 if (isset($_POST['book'], $_POST['rating'])) {
 	if (isset($books[ $_POST['book'] ])) {
@@ -28,7 +29,7 @@ if (isset($_POST['book'], $_POST['collection'], $_POST['add'])) {
 		$book = $books[ $_POST['book'] ];
 
 		if ($client->toggleBookCollection($book, $_POST['collection'], (bool) $_POST['add'])) {
-			$book->toggleCollection($collections, $_POST['collection'], $_POST['add']);
+			$book->toggleCollection($_POST['collection'], $_POST['add']);
 
 			$client->setCatalogue($books);
 			echo '1';
@@ -103,7 +104,9 @@ a.rate-book.working {
 	font-weight: bold;
 }
 .catalogue:not(.collecting) .collections input:not(:checked) + label:not(.working),
-.catalogue:not(.collecting) .collections input:not(:checked) + label:not(.working) + br {
+.catalogue:not(.collecting) .collections input:not(:checked) + label:not(.working) + br,
+.catalogue:not(.collecting) .collections input.not-relevant + label:not(.working),
+.catalogue:not(.collecting) .collections input.not-relevant + label:not(.working) + br {
 	display: none;
 }
 </style>
@@ -129,7 +132,7 @@ a.rate-book.working {
 	</thead>
 	<tbody>
 		<? foreach ($books as $book): ?>
-			<tr data-id="<?= html($book->id) ?>" data-collections="<?= html(json_encode(array_keys($book->getCollections($skipCollections)))) ?>">
+			<tr data-id="<?= html($book->id) ?>" data-collections="<?= html(json_encode($book->collections)) ?>">
 				<td data-sort="author"><?= html($book->author) ?></td>
 				<td><?= html($book->title) ?></td>
 				<td data-sort="year"><?= html($book->year) ?></td>
@@ -140,11 +143,11 @@ a.rate-book.working {
 					</a>
 				</td>
 				<td class="collections">
-					<? foreach ($collections as $id => $name):
+					<? foreach ($collections as $id => $collection):
 						$on = $book->hasCollection($id);
 						?>
-						<input  id="b-<?= $book->id ?>-c-<?= $id ?>" type="checkbox" value="<?= $id ?>" <?= $on ? 'checked' : '' ?> />
-						<label for="b-<?= $book->id ?>-c-<?= $id ?>"><?= html($name) ?></label>
+						<input  id="b-<?= $book->id ?>-c-<?= $id ?>" type="checkbox" value="<?= $id ?>" <?= $on ? 'checked' : '' ?> class="<?= $collection->relevant ? '' : 'not-relevant' ?>" />
+						<label for="b-<?= $book->id ?>-c-<?= $id ?>"><?= html($collection) ?></label>
 						<br>
 					<? endforeach ?>
 				</td>

@@ -8,10 +8,6 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\RedirectMiddleware;
 use rdx\jsdom\Node;
-use rdx\librarything\Book;
-use rdx\librarything\BookRow;
-use rdx\librarything\FileCache;
-use rdx\librarything\WebAuth;
 
 class Client {
 
@@ -71,22 +67,45 @@ class Client {
 	/**
 	 *
 	 */
-	public function getCollections( array $books, &$skipCollections = [] ) {
-		// Gather all collections from all books
-		$collections = $counts = [];
+	public function markIrrelevantCollections( array $collections, array $books ) {
+		$used = [];
 		foreach ( $books as $book ) {
-			foreach ( $book->getCollections() as $id => $name ) {
-				@$counts[$id]++;
-				@$collections[$id] = $name;
+			foreach ( $book->collections as $id ) {
+				@$used[$id]++;
 			}
 		}
 
-		// Skip and remember the ones that exist everywhere
-		foreach ( $counts as $id => $usage ) {
-			if ( $usage == count($books) ) {
-				$skipCollections[$id] = $collections[$id];
-				unset($collections[$id]);
+		foreach ( $collections as $id => $collection ) {
+			if ( @$used[$id] === count($books) ) {
+				$collection->relevant = false;
 			}
+		}
+	}
+
+	/**
+	 *
+	 */
+	public function getCollections() {
+		return $this->cache->retrieve('collections', function() {
+			// Get the first page
+			$res = $this->guzzle->request('GET', '/catalog_bottom.php', []);
+
+			return $this->extractCollections($res->getBody());
+		});
+	}
+
+	/**
+	 *
+	 */
+	protected function extractCollections( $html ) {
+		preg_match_all("#LibraryThing\.collections\.pickCollection\('*(\d+)'*, 1\).+?>(.+?)<#", $html, $matches, PREG_SET_ORDER);
+		$collectionNames = array_reduce($matches, function(array $list, array $match) {
+			return $list + [$match[1] => html_entity_decode($match[2])];
+		}, []);
+
+		$collections = [];
+		foreach ( $collectionNames as $id => $name ) {
+			$collections[$id] = new Collection($id, $name);
 		}
 
 		return $collections;
@@ -115,6 +134,9 @@ class Client {
 			// Get the first page
 			$res = $this->guzzle->request('GET', '/catalog_bottom.php', []);
 			$htmls = [$res->getBody()];
+
+			$collections = $this->extractCollections($htmls[0]);
+			$this->cache->store('collections', $collections);
 
 			$getNextPageUri = function( $html ) {
 				$dom = Node::create($html);
