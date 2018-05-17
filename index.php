@@ -60,7 +60,7 @@ th[data-sort] {
 th[data-sort]:after {
 	content: " ⇕";
 }
-th[data-sort]:not(.sorting):after {
+th[data-sort]:not([data-sorting]):after {
 	color: #ccc;
 }
 
@@ -131,7 +131,7 @@ a.rate-book.working {
 			<th data-sort="author">Author</th>
 			<th>Title</th>
 			<th data-sort="year">Year</th>
-			<th data-sort="entry_date" class="sorting">Entry date</th>
+			<th data-sort="entry_date" data-sorting="desc">Entry date</th>
 			<th data-sort="rating">Rating</th>
 			<th onclick="this.parentNode.parentNode.parentNode.classList.toggle('collecting')">Collections</th>
 		</tr>
@@ -210,9 +210,16 @@ filterTextElement.oninput = function(e) {
 sortersElement.onclick = function(e) {
 	var sorter = e.target.dataset.sort;
 	if (sorter) {
-		var prevSort = document.querySelector('.sorting');
-		prevSort && prevSort.classList.remove('sorting');
-		e.target.classList.add('sorting');
+		var newSort = e.target;
+		var prevSort = document.querySelector('[data-sorting]');
+		if (newSort == prevSort) {
+			newSort.dataset.sorting = newSort.dataset.sorting == 'asc' ? 'desc' : 'asc';
+		}
+		else {
+			delete prevSort.dataset.sorting;
+			newSort.dataset.sorting = 'asc';
+		}
+		var desc = newSort.dataset.sorting == 'asc' ? 1 : -1;
 
 		console.time('Sorting rows');
 		rows.sort(function(a, b) {
@@ -220,7 +227,8 @@ sortersElement.onclick = function(e) {
 			va = va.dataset.value || va.textContent.trim();
 			var vb = b.querySelector('td[data-sort="' + sorter + '"]');
 			vb = vb.dataset.value || vb.textContent.trim();
-			return va == vb ? (a.dataset.id - b.dataset.id) : va > vb ? 1 : -1;
+			var dir = va == vb ? (a.dataset.id - b.dataset.id) : va > vb ? 1 : -1;
+			return desc * dir;
 		});
 		console.timeEnd('Sorting rows');
 
